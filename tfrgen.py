@@ -3,6 +3,7 @@ import cv2
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras.applications.vgg16 import VGG16
+import time
 
 # The following functions can be used to convert a value to a type compatible
 # with tf.Example.
@@ -21,6 +22,7 @@ def _int64_feature(value):
   """Returns an int64_list from a bool / enum / int / uint."""
   return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
 
+start=time.time()
 dbg_file_limit = 5
 path = r'C:\D\gits\UCF101'
 record_dir = r'C:\D\gits\UCF_VGG_TFR'
@@ -49,10 +51,10 @@ for foldername in os.listdir(path):
 				features = vgg_model.predict(frame_expanded)
 				#print(features.shape)#(1,7,10,512)
 				feature_format = {
-					'height': _int64_feature(features.shape[0]),
-					'width': _int64_feature(features.shape[1]),
-					'depth': _int64_feature(features.shape[2]),
+					'dim': _int64_feature(features.shape[0]*features.shape[1]*features.shape[2]),
+					'label': _bytes_feature(foldername.encode('utf-8')),
 					'features_raw': _bytes_feature(tf.io.serialize_tensor(features)),
 				}
 				x=tf.train.Example(features=tf.train.Features(feature=feature_format))
 				writer.write(x.SerializeToString())
+print(time.time()-start)#4873s
